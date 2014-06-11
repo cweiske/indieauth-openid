@@ -1,14 +1,23 @@
 <?php
 /**
+ * IndieAuth to OpenID proxy.
+ * Proxies IndieAuth authorization requests to one's OpenID server
  *
- * @link http://indiewebcamp.com/login-brainstorming
- * @link https://indieauth.com/developers
+ * PHP version 5
+ *
+ * @package indieauth-openid
+ * @author  Christian Weiske <cweiske@cweiske.de>
+ * @license http://www.gnu.org/licenses/agpl.html GNU AGPL v3
+ * @link    http://indiewebcamp.com/login-brainstorming
+ * @link    http://indiewebcamp.com/authorization-endpoint
+ * @link    http://indiewebcamp.com/auth-brainstorming
+ * @link    https://indieauth.com/developers
  */
-//require_once __DIR__ . '/../src/init.php';
+
+require_once 'Net/URL2.php';
 require_once 'OpenID/RelyingParty.php';
 require_once 'OpenID/Message.php';
 require_once 'OpenID/Exception.php';
-require_once 'Net/URL2.php';
 
 function loadDb()
 {
@@ -83,6 +92,7 @@ function validate_token($code, $redirect_uri, $client_id, $state)
 function error($msg)
 {
     header('HTTP/1.0 400 Bad Request');
+    header('Content-type: text/plain; charset=utf-8');
     echo $msg . "\n";
     exit(1);
 }
@@ -108,12 +118,7 @@ function getBaseUrl()
     if (!isset($_SERVER['REQUEST_SCHEME'])) {
         $_SERVER['REQUEST_SCHEME'] = 'http';
     }
-    $file = preg_replace('/#.*$/', '', $_SERVER['REQUEST_URI']);
-    if ($file == '') {
-        $file = ' /';
-    } else if (substr($file, -1) != '/') {
-        $file = dirname($file);
-    }
+    $file = preg_replace('/[?#].*$/', '', $_SERVER['REQUEST_URI']);
     return $_SERVER['REQUEST_SCHEME'] . '://'
         . $_SERVER['HTTP_HOST']
         . $file;
@@ -133,6 +138,14 @@ if (isset($_GET['openid_mode']) && $_GET['openid_mode'] != '') {
 
     $message = new \OpenID_Message($queryString, \OpenID_Message::FORMAT_HTTP);
     $id      = $message->get('openid.claimed_id');
+    if ($id != $_SESSION['me']) {
+        error(
+            sprintf(
+                'Given identity URL "%s" and claimed OpenID "%s" do not match',
+                $_SESSION['me'], $id
+            )
+        );
+    }
     try {
         $o = new \OpenID_RelyingParty($returnTo, $realm, $_SESSION['me']);
         $result = $o->verify(new \Net_URL2($returnTo . '?' . $queryString), $message);
@@ -150,10 +163,10 @@ if (isset($_GET['openid_mode']) && $_GET['openid_mode'] != '') {
             header('Location: ' . $url->getURL());
             exit();
         } else {
-            error('Error logging in: ' . $result->getAssertionMethod());
+            error('Error verifying OpenID login: ' . $result->getAssertionMethod());
         }
     } catch (OpenID_Exception $e) {
-        error('Error logging in: ' . $e->getMessage());
+        error('Error verifying OpenID login: ' . $e->getMessage());
     }
 }
 
@@ -165,7 +178,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if (isset($_GET['state'])) {
         $state = $_GET['state'];
     }
-    //FIXME: support "response_type"?
+    $response_type = 'id';
+    if (isset($_GET['response_type'])) {
+        $response_type = $_GET['response_type'];
+    }
+    if ($response_type != 'id') {
+        error('unsupported response_type: ' . $response_type);
+    }
 
     $_SESSION['me']           = $me;
     $_SESSION['redirect_uri'] = $redirect_uri;
