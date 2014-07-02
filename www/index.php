@@ -124,6 +124,7 @@ function getBaseUrl()
         . $file;
 }
 
+header('IndieAuth: authorization_endpoint');
 session_start();
 $returnTo = getBaseUrl();
 $realm    = getBaseUrl();
