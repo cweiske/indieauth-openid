@@ -205,8 +205,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $redirect_uri = verifyUrlParameter($_POST, 'redirect_uri');
     $client_id    = verifyUrlParameter($_POST, 'client_id');
     $state        = null;
-    if (isset($_GET['state'])) {
-        $state = $_GET['state'];
+    if (isset($_POST['state'])) {
+        $state = $_POST['state'];
     }
     if (!isset($_POST['code'])) {
         error('"code" parameter missing');
