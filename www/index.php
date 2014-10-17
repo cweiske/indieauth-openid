@@ -15,6 +15,7 @@
  */
 
 require_once 'Net/URL2.php';
+require_once 'OpenID.php';
 require_once 'OpenID/RelyingParty.php';
 require_once 'OpenID/Message.php';
 require_once 'OpenID/Exception.php';
@@ -139,7 +140,7 @@ if (isset($_GET['openid_mode']) && $_GET['openid_mode'] != '') {
 
     $message = new \OpenID_Message($queryString, \OpenID_Message::FORMAT_HTTP);
     $id      = $message->get('openid.claimed_id');
-    if ($id != $_SESSION['me']) {
+    if (OpenID::normalizeIdentifier($id) != OpenID::normalizeIdentifier($_SESSION['me'])) {
         error(
             sprintf(
                 'Given identity URL "%s" and claimed OpenID "%s" do not match',
