@@ -13,6 +13,12 @@
  * @link    http://indiewebcamp.com/auth-brainstorming
  * @link    https://indieauth.com/developers
  */
+if (($_SERVER['REQUEST_METHOD'] == 'GET' || $_SERVER['REQUEST_METHOD'] == 'HEAD')
+    && count($_GET) == 0
+) {
+    include 'about.php';
+    exit();
+}
 
 require_once 'Net/URL2.php';
 require_once 'OpenID.php';
