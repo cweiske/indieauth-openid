@@ -13,6 +13,7 @@
  * @link    http://indiewebcamp.com/auth-brainstorming
  * @link    https://indieauth.com/developers
  */
+header('IndieAuth: authorization_endpoint');
 if (($_SERVER['REQUEST_METHOD'] == 'GET' || $_SERVER['REQUEST_METHOD'] == 'HEAD')
     && count($_GET) == 0
 ) {
@@ -131,7 +132,6 @@ function getBaseUrl()
         . $file;
 }
 
-header('IndieAuth: authorization_endpoint');
 session_start();
 $returnTo = getBaseUrl();
 $realm    = getBaseUrl();
