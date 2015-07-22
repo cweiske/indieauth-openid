@@ -201,6 +201,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     try {
         $o = new \OpenID_RelyingParty($returnTo, $realm, $me);
+        //if you get timeouts (errors like
+        // OpenID error: Request timed out after 3 second(s)
+        //) then uncomment the following line which disables
+        // all timeouts:
+        //$o->setRequestOptions(array('follow_redirects' => true));
         $authRequest = $o->prepare();
         $url = $authRequest->getAuthorizeURL();
         header("Location: $url");
