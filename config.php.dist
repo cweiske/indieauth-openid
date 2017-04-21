@@ -1,0 +1,5 @@
+<?php
+//copy this to config.php and adjust it to your liking
+// when using the .phar, append ".config.php" to the phar file name
+$dsn = 'sqlite:/tmp/file.sq3';
+?>

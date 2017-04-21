@@ -4,7 +4,10 @@ if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']) {
 } else {
     $prot = 'http';
 }
-$epUrl  = $prot . '://' . $_SERVER['HTTP_HOST'] . '/';
+$epUrl = $prot . '://' . $_SERVER['HTTP_HOST'] . '/';
+if (Phar::running()) {
+    $epUrl .= ltrim($_SERVER['SCRIPT_NAME'], '/') . '/';
+}
 $hepUrl = htmlspecialchars($epUrl);
 
 ?>

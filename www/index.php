@@ -29,7 +29,22 @@ require_once 'OpenID/Exception.php';
 
 function loadDb()
 {
-    $db = new PDO('sqlite:' . __DIR__ . '/../data/tokens.sq3');
+    $pharFile = \Phar::running();
+    if ($pharFile == '') {
+        $dsn = 'sqlite:' . __DIR__ . '/../data/tokens.sq3';
+        $cfgFilePath = __DIR__ . '/config.php';
+    } else {
+        //remove phar:// from the path
+        $dir = dirname(substr($pharFile, 7)) . '/';
+        $dsn = 'sqlite:' . $dir . '/tokens.sq3';
+        $cfgFilePath = substr($pharFile, 7) . '.config.php';
+    }
+    //allow overriding DSN
+    if (file_exists($cfgFilePath)) {
+        include $cfgFilePath;
+    }
+
+    $db = new PDO($dsn);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $db->exec("CREATE TABLE IF NOT EXISTS authtokens(
 code TEXT,
@@ -175,6 +190,8 @@ if (isset($_GET['openid_mode']) && $_GET['openid_mode'] != '') {
         }
     } catch (OpenID_Exception $e) {
         error('Error verifying OpenID login: ' . $e->getMessage());
+    } catch (Exception $e) {
+        error(get_class($e) . ': ' . $e->getMessage());
     }
 }
 
@@ -212,6 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         exit(0);
     } catch (OpenID_Exception $e) {
         error('OpenID error: ' . $e->getMessage());
+    } catch (Exception $e) {
+        error(get_class($e) . ': ' . $e->getMessage());
     }
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $redirect_uri = verifyUrlParameter($_POST, 'redirect_uri');

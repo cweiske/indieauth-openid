@@ -1,2 +1,5 @@
-data/tokens.sq3
-README.html
+/config.php
+/data/tokens.sq3
+/dist/
+/lib/
+/README.html

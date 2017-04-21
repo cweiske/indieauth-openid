@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="indieauth-openid" default="phar" basedir=".">
+  <!--
+    indieauth-openid phing build file.
+  -->
+  <property name="version"    value="0.1.0" />
+  <property name="stability"  value="beta" />
+  <property name="libdir"      value="${phing.dir}/lib"/>
+
+  <property name="pharfile"    value="${phing.project.name}-${version}.phar" />
+
+  <property name="pharpath"    value="${phing.dir}/dist/${pharfile}" />
+
+  <fileset id="fs.phar" dir="${phing.dir}">
+   <include name="lib/**"/>
+   <include name="www/**"/>
+
+   <include name="ChangeLog"/>
+   <include name="README.rst"/>
+
+   <exclude name="**/.git/"/>
+   <exclude name="**/.gitignore/"/>
+  </fileset>
+
+  <target name="phar" depends="preparedirs,collectdeps"
+          description="Create phar file for release"
+  >
+   <delete file="${pharpath}"/>
+   <pharpackage basedir="${phing.dir}"
+                destfile="${pharpath}"
+                stub="${phing.dir}/src/phar-stub.php"
+                alias="phorkie.phar"
+   >
+    <fileset refid="fs.phar"/>
+   </pharpackage>
+
+   <exec executable="bzip2" dir="${phing.dir}/dist">
+    <arg value="-kf"/>
+    <arg file="${pharpath}"/>
+   </exec>
+  </target>
+
+
+  <target name="collectdeps" description="Copy package dependencies to lib/">
+   <delete dir="${libdir}"/>
+   <mkdir dir="${libdir}"/>
+
+   <!-- requires phing >= 2.8.0 -->
+   <copy todir="${libdir}">
+    <pearPackageFileset package="pear.php.net/Cache_Lite"/><!-- OpenID -->
+    <pearPackageFileset package="pear.php.net/Crypt_DiffieHellman"/><!-- OpenID -->
+    <pearPackageFileset package="pear.php.net/HTTP_Request2"/><!-- OpenID -->
+    <pearPackageFileset package="pear.php.net/Net_URL2"/>
+    <pearPackageFileset package="pear.php.net/OpenID"/>
+    <pearPackageFileset package="pear.php.net/PEAR">
+     <include name="PEAR/Exception.php"/>
+     <include name="PEAR.php"/>
+    </pearPackageFileset>
+    <pearPackageFileset package="pear.php.net/Services_Yadis"/><!-- OpenID -->
+    <pearPackageFileset package="pear.php.net/Validate"/><!-- OpenID (Yadis) -->
+   </copy>
+  </target>
+
+  <target name="preparedirs">
+    <mkdir dir="dist" />
+  </target>
+</project>
