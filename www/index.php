@@ -246,9 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     $me = validate_token($token, $redirect_uri, $client_id, $state);
     if ($me === false) {
-        header('HTTP/1.0 400 Bad Request');
-        echo "Validating token failed\n";
-        exit(1);
+        error('Validating token failed');
     }
     header('Content-type: application/x-www-form-urlencoded');
     echo 'me=' . urlencode($me);
