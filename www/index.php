@@ -81,7 +81,7 @@ function create_token($me, $redirect_uri, $client_id, $state)
     return $code;
 }
 
-function validate_token($code, $redirect_uri, $client_id, $state)
+function validate_token($code, $redirect_uri, $client_id)
 {
     $db = loadDb();
     $stmt = $db->prepare(
@@ -89,7 +89,6 @@ function validate_token($code, $redirect_uri, $client_id, $state)
         . ' code = :code'
         . ' AND redirect_uri = :redirect_uri'
         . ' AND client_id = :client_id'
-        . ' AND state = :state'
         . ' AND created >= :created'
     );
     $stmt->execute(
@@ -97,7 +96,6 @@ function validate_token($code, $redirect_uri, $client_id, $state)
             ':code'         => $code,
             ':redirect_uri' => $redirect_uri,
             ':client_id'    => $client_id,
-            ':state'        => (string) $state,
             ':created'      => date('c', time() - 60)
         )
     );
@@ -235,16 +233,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 } else if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $redirect_uri = verifyUrlParameter($_POST, 'redirect_uri');
     $client_id    = verifyUrlParameter($_POST, 'client_id');
-    $state        = null;
-    if (isset($_POST['state'])) {
-        $state = $_POST['state'];
-    }
     if (!isset($_POST['code'])) {
         error('"code" parameter missing');
     }
     $token = $_POST['code'];
 
-    $me = validate_token($token, $redirect_uri, $client_id, $state);
+    $me = validate_token($token, $redirect_uri, $client_id);
     if ($me === false) {
         error('Validating token failed');
     }
