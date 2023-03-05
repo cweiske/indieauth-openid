@@ -21,11 +21,7 @@ if (($_SERVER['REQUEST_METHOD'] == 'GET' || $_SERVER['REQUEST_METHOD'] == 'HEAD'
     exit();
 }
 
-require_once 'Net/URL2.php';
-require_once 'OpenID.php';
-require_once 'OpenID/RelyingParty.php';
-require_once 'OpenID/Message.php';
-require_once 'OpenID/Exception.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 function loadDb()
 {
@@ -114,6 +110,7 @@ function error($msg)
 {
     header('HTTP/1.0 400 Bad Request');
     header('Content-type: text/plain; charset=utf-8');
+    file_put_contents('/tmp/indieauth.id.cweiske.de-error', $msg . "\n", FILE_APPEND);
     echo $msg . "\n";
     exit(1);
 }
